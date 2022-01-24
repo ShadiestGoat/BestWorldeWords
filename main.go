@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"shadygoat.eu/WordleFucker/solver"
 )
 
 type Data struct {
@@ -21,8 +22,7 @@ type PoppularityInfo struct {
 
 func main() {
 	parser("")
-	parser("2")
-	parser("3")
+	solver.MainSolver()
 }
 
 func parser(prefix string) {
