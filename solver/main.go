@@ -23,7 +23,12 @@ const (
 	FALSE
 )
 
-var curWordStatus = [5]LetterInfoGuess{}
+type CurGuess struct {
+	WordStatus [5]LetterInfoGuess
+	Greeeners map[string]bool
+}
+
+var curWordStatus = CurGuess{}
 
 type LetterInfoGuess struct {
 	Letter string
@@ -63,7 +68,8 @@ func MainSolver() {
 		panic(err)
 	}
 	json.Unmarshal(wordsRaw, &wordsleft)
-	
+	curWordStatus.Greeeners = map[string]bool{}
+	curWordStatus.WordStatus = [5]LetterInfoGuess{}
 	for i := 0; i < 6; i++ {
 		fmt.Println("Try... " + wordsleft[0].String)
 		status := StringPrompt("What was the output?")
@@ -75,6 +81,14 @@ func MainSolver() {
 		}
 
 		guess := WordGuess{}
+
+		if len(status) == 1 {
+			// This is fine, because we know that the characters are only g, y & f.
+			letter := string(status[0])
+			for i := 0; i < 4; i++ {
+				status += letter
+			}
+		}
 
 		if strings.ToLower(status) == "ggggg" {
 			fmt.Println("Got em ^^")
@@ -110,8 +124,9 @@ func tryWord(guess WordGuess) {
 		switch guess.Output[i] {
 		case GREEN:
 			newLetters := []string{}
-			curWordStatus[i].Letter = letter
-			curWordStatus[i].Found = true
+			curWordStatus.WordStatus[i].Letter = letter
+			curWordStatus.WordStatus[i].Found = true
+			curWordStatus.Greeeners[letter] = true
 			for _, yL := range yelloWLetters {
 				if letter == yL {
 					continue
@@ -123,7 +138,9 @@ func tryWord(guess WordGuess) {
 			newInfo.ImoossiblePlaces[i] = true
 			yelloWLetters = append(yelloWLetters, letter)
 		case FALSE:
-			newInfo.IsFalse = true
+			if !curWordStatus.Greeeners[letter] {
+				newInfo.IsFalse = true
+			}
 		}
 		letterInfo[letter] = newInfo
 	}
@@ -139,7 +156,7 @@ func tryWord(guess WordGuess) {
 			} else if letterInfo[string(letter)].ImoossiblePlaces[letterI] {
 				curWordInfo = false
 				break
-			} else if curWordStatus[letterI].Found && (string(letter) != curWordStatus[letterI].Letter) {
+			} else if curWordStatus.WordStatus[letterI].Found && (string(letter) != curWordStatus.WordStatus[letterI].Letter) {
 				curWordInfo = false
 				break
 			}

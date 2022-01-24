@@ -2,16 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"sort"
-	"strings"
 	"shadygoat.eu/WordleFucker/solver"
 )
 
 type Data struct {
-	commonLetter map[string]int
 	commonLetterWord []map[string]int
 }
 
@@ -33,7 +30,6 @@ func parser(prefix string) {
 	words := []string{}
 	data := Data{}
 
-	data.commonLetter = map[string]int{}
 	data.commonLetterWord = make([]map[string]int, 5)
 
 	err = json.Unmarshal(wordsRaw, &words)
@@ -43,15 +39,12 @@ func parser(prefix string) {
 
 	for i, word := range words {
 		for letterI, letter := range word {
-			data.commonLetter[string(letter)]++
 			if i == 0 {
 				data.commonLetterWord[letterI] = map[string]int{}		
 			}
 			data.commonLetterWord[letterI][string(letter)]++
 		}
 	}
-
-	fmt.Println(`Most common letters: "` + strings.Join(commonLetters(data.commonLetter), "") + `"`)
 
 	poppularityByLetterIndex := [5]map[string]int{} // letter -> index
 
@@ -104,21 +97,4 @@ func parser(prefix string) {
 	}
 
 	file.Write(jsonOutput)
-}
-
-func commonLetters(data map[string]int) []string {
-	commonLetters := []string{}
-
-	commonLetter := ""
-	
-	for letter, common := range data {
-		if data[commonLetter] == common {
-			commonLetters = append(commonLetters, letter)
-		} else if data[commonLetter] < common {
-			commonLetters = []string{letter}
-			commonLetter = letter
-		}
-	}
-
-	return commonLetters
 }
